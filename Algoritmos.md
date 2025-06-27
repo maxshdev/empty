@@ -28,70 +28,92 @@ El sistema busca evaluar la similitud entre nombres de beneficiarios antes y des
 
 # 📊 Ejemplos prácticos de comparación de nombres de beneficiarios
 
-## 🏢 Ejemplo 1: Empresa con siglas vs nombre extendido
+## 🏢 Ejemplo 1: Empresa con siglas vs nombre extendido (con siglas y razón social larga)
 
 **Cadena A:**  
-`F A I P FABRICA ARGENTINA DE IMPLEMENTOS PARA ESTACIONAMIENTO SOCIEDAD ANONIMA INDUSTRIAL Y COMERCIAL`  
+F A I P FABRICA AMERICANA INDUSTRIALIZADORA DE PAPELES S A I Y C  
 **Cadena B:**  
-`FAIP SAIC`
+FAIP S.A.I.C
 
-| Algoritmo   | Valor    | Evaluación |
-|-------------|----------|------------|
-| Levenshtein | 15.79%   | ✅ Buena respuesta estructural |
-| QGram 3     | 9.23%    | ❌ Muy bajo |
-| N-Gram      | 11.76%   | ❌ Bajo |
-| Jaccard     | 22.22%   | 🔸 Regular |
-| Cosine      | 24.6%    | 🔸 Regular |
+| Algoritmo         | Valor    |
+|-------------------|----------|
+| PrevLevenshtein   | 90.00%   |
+| Levenshtein       | 15.79%   |
+| Jaccard           | 9.09%    |
+| N-Gram            | 14.62%   |
+| QGram (2)         | 25.00%   |
+| QGram (3)         | 16.13%   |
+| Cosine            | 24.60%   |
 
-**Interpretación:**  
-Aunque el porcentaje es bajo, **Levenshtein** logra captar cierta similitud estructural entre la sigla "FAIP" y el nombre completo.  
-QGram y N-Gram penalizan duramente las diferencias de longitud y orden.  
-**Jaccard** y **Cosine** tienen valores un poco más altos, pero aún no reflejan adecuadamente la equivalencia que percibe un humano.
+### 🧠 Interpretación
+
+El valor de **PrevLevenshtein** (90%) muestra una fuerte coincidencia basada en una versión anterior del algoritmo, probablemente más tolerante con substrings, siglas y orden flexible. En cambio, la versión moderna de **Levenshtein** reduce la similitud a **15.79%**, lo que evidencia que penaliza fuertemente las diferencias de longitud y los caracteres intermedios.
+
+Los métodos como **Jaccard**, **N-Gram** y **QGram (3)** ofrecen valores muy bajos, ya que dependen de coincidencias exactas de fragmentos contiguos, lo cual es poco efectivo en casos con siglas o abreviaciones.
+
+El resultado de **Cosine** y **QGram (2)** es moderado, mostrando que al considerar frecuencias y pares de caracteres se logra una aproximación más equilibrada, aunque todavía distante de la percepción humana de equivalencia.
+
+Este ejemplo destaca cómo distintas variantes del mismo algoritmo pueden producir resultados drásticamente diferentes, y cómo la elección de métrica puede impactar significativamente la detección de entidades similares en datos reales.
 
 ---
 
 ## 👨‍⚖️ Ejemplo 2: Nombre de estudio jurídico con espacio omitido
 
 **Cadena A:**  
-`ESTUDIO O FARRELL`  
+ESTUDIO O FARRELL SOCIEDAD COLECTIVA  
 **Cadena B:**  
-`ESTUDIO OFARRELL`
+ESTUDIO OFARRELL
 
-| Algoritmo   | Valor    | Evaluación |
-|-------------|----------|------------|
-| Levenshtein | 55.17%   | 🔸 Regular |
-| QGram 3     | 57.14%   | ✅ Buena |
-| N-Gram      | 55.17%   | 🔸 Regular |
-| Jaccard     | 40%      | ❌ Bajo |
-| Cosine      | 61.72%   | ✅ Buena |
+| Algoritmo         | Valor    |
+|-------------------|----------|
+| PrevLevenshtein   | 93.75%   |
+| Levenshtein       | 55.17%   |
+| Jaccard           | 41.38%   |
+| N-Gram            | 52.87%   |
+| QGram (2)         | 65.12%   |
+| QGram (3)         | 58.54%   |
+| Cosine            | 61.72%   |
 
-**Interpretación:**  
-La diferencia es mínima (el espacio entre "O" y "FARRELL").  
-**QGram** y **Cosine** muestran mayor tolerancia a este tipo de variaciones menores.  
-**Jaccard** se ve afectado por el pequeño cambio y ofrece menor precisión.
+### 🧠 Interpretación
+
+El algoritmo **PrevLevenshtein** muestra un alto nivel de similitud (**93.75%**), capturando correctamente que la única diferencia significativa es el espacio omitido entre “O” y “FARRELL”, y una extensión común como “SOCIEDAD COLECTIVA” que no afecta la identidad principal.
+
+Los algoritmos basados en fragmentos como **QGram** y **Cosine** también manejan bien esta variación, con valores por encima del 60%, ya que toleran diferencias mínimas en espaciado o segmentación.
+
+**Levenshtein** moderno baja a **55.17%** por penalizar carácter a carácter, incluso por un solo espacio, mientras que **Jaccard** se ve más afectado al tratar los textos como conjuntos disjuntos de palabras, perdiendo fuerza ante la omisión de un token.
+
+Este caso evidencia cómo pequeños cambios en la segmentación (espacios, puntuación) pueden tener impacto desproporcionado en algunos algoritmos, mientras que otros mantienen una mejor robustez semántica.
 
 ---
 
 ## 🧍 Ejemplo 3: Nombre de persona mal tipeado
 
 **Cadena A:**  
-`ERBRENEE`  
+ERBRENEE  
 **Cadena B:**  
-`ERB RENEE`
+ERB RENEE
 
-| Algoritmo   | Valor    | Evaluación |
-|-------------|----------|------------|
-| Levenshtein | 88.89%   | ✅ Excelente |
-| QGram 3     | 52.17%   | ❌ Bajo |
-| N-Gram      | 55.56%   | ❌ Bajo |
-| Jaccard     | 33.33%   | ❌ Muy bajo |
-| Cosine      | 61.72%   | 🔸 Regular |
+| Algoritmo         | Valor    |
+|-------------------|----------|
+| PrevLevenshtein   | 50.00%   |
+| Levenshtein       | 88.89%   |
+| Jaccard           | 44.44%   |
+| N-Gram            | 81.48%   |
+| QGram (2)         | 80.00%   |
+| QGram (3)         | 61.54%   |
+| Cosine            | 61.72%   |
 
-**Interpretación:**  
-Hay un error de tipeo (espacio faltante).  
-**Levenshtein** se destaca al detectar que solo hay una modificación importante.  
-**Cosine** también responde bien comparando estructuras.  
-QGram, N-Gram y Jaccard se ven penalizados por trabajar con fragmentos o tokens exactos.
+### 🧠 Interpretación
+
+En este caso, la cadena presenta una omisión de espacio, típica de errores de tipeo entre nombres y apellidos. El algoritmo **Levenshtein** moderno logra un excelente desempeño (**88.89%**) al evaluar la transformación mínima entre ambas cadenas.
+
+Curiosamente, **PrevLevenshtein** da un valor bajo (**50.00%**), lo que sugiere que su versión antigua penaliza más la distancia por la concatenación sin espacio.
+
+**N-Gram** y **QGram (2)** también ofrecen valores altos (**81.48%** y **80.00%**, respectivamente), ya que permiten comparar secuencias con tolerancia a desplazamientos leves. Esto indica que trabajan bien en nombres cortos con errores menores.
+
+Por su parte, **Jaccard** sufre al tratar los tokens como conjuntos, y su resultado (**44.44%**) refleja la pérdida de correspondencia debido a la segmentación incorrecta.
+
+Este ejemplo muestra cómo algoritmos sensibles a la distancia de edición o fragmentos flexibles son más eficaces para capturar errores simples de tipeo en nombres personales.
 
 ---
 
