@@ -120,44 +120,62 @@ Este ejemplo muestra cómo algoritmos sensibles a la distancia de edición o fra
 ## 🏭 Ejemplo 4: Empresa con nombre abreviado
 
 **Cadena A:**  
-`ADECO AGROPECUARIA SA`  
+ADECO AGROPECUARIA SA  
 **Cadena B:**  
-`ADECO ASA`
+ADECO ASA
 
-| Algoritmo   | Valor    | Evaluación |
-|-------------|----------|------------|
-| Levenshtein | 90.00%   | ✅ Excelente |
-| QGram 3     | 42.86%   | ❌ Bajo |
-| N-Gram      | 45.00%   | ❌ Bajo |
-| Jaccard     | 28.57%   | ❌ Muy bajo |
-| Cosine      | 66.82%   | 🔸 Aceptable |
+| Algoritmo         | Valor    |
+|-------------------|----------|
+| PrevLevenshtein   | 83.33%   |
+| Levenshtein       | 90.00%   |
+| Jaccard           | 50.00%   |
+| N-Gram            | 83.33%   |
+| QGram (2)         | 82.35%   |
+| QGram (3)         | 66.67%   |
+| Cosine            | 66.82%   |
 
-**Interpretación:**  
-**Levenshtein** logra un valor alto reconociendo "ADECO" y el parecido entre "AGROPECUARIA SA" y "ASA".  
-**Cosine** también tolera bien las abreviaciones.  
-QGram, N-Gram y Jaccard muestran menor desempeño por comparar tokens desalineados o distintos.
+### 🧠 Interpretación
+
+Este caso representa una abreviación común en razón social: “AGROPECUARIA SA” se reduce a “ASA”. El algoritmo **Levenshtein** moderno entrega un valor muy alto (**90.00%**), reconociendo la fuerte coincidencia entre “ADECO” y las partes claves del nombre.
+
+**PrevLevenshtein** también obtiene un resultado sólido (**83.33%**), aunque algo menor, posiblemente por una menor tolerancia a abreviaciones que condensan múltiples palabras.
+
+Tanto **N-Gram** como **QGram (2)** muestran buenos resultados (ambos por encima del 80%), lo que indica su capacidad para comparar secuencias parcialmente alineadas, especialmente cuando la abreviación mantiene parte de la raíz léxica.
+
+**Jaccard**, aunque mejora en relación a otros ejemplos, sigue penalizando la falta de tokens completos coincidentes, reflejando un enfoque más literal que semántico.
+
+Este ejemplo destaca cómo los algoritmos que permiten flexibilidad en secuencia o edición son útiles para detectar correspondencias en denominaciones comerciales abreviadas.
 
 ---
 
-## 🏪 Ejemplo 5: Nombre con errores tipográficos y mayúsculas
+## 🧪 Ejemplo 5: Sigla frente a nombre completo institucional
 
 **Cadena A:**  
-`SUPERMERCADO EL DORADO`  
+IRAM INSTITUTO ARGENTINO DE NORMALIZACION Y CERTIFICACION  
 **Cadena B:**  
-`Supermercado Eldorado`
+IRAM
 
-| Algoritmo   | Valor    | Evaluación |
-|-------------|----------|------------|
-| Levenshtein | 88.89%   | ✅ Excelente |
-| QGram 3     | 72.73%   | 🔸 Bueno |
-| N-Gram      | 72.73%   | 🔸 Bueno |
-| Jaccard     | 60%      | 🔸 Regular |
-| Cosine      | 75.32%   | ✅ Buena |
+| Algoritmo         | Valor    |
+|-------------------|----------|
+| PrevLevenshtein   | 100.00%  |
+| Levenshtein       | 8.16%    |
+| Jaccard           | 4.55%    |
+| N-Gram            | 8.16%    |
+| QGram (2)         | 11.76%   |
+| QGram (3)         | 8.16%    |
+| Cosine            | 19.43%   |
 
-**Interpretación:**  
-Errores menores de espacios y mayúsculas afectan poco a Levenshtein y Cosine.  
-QGram y N-Gram responden bien al mantener fragmentos similares.  
-Jaccard, más estricto con tokens, baja su puntuación.
+### 🧠 Interpretación
+
+Este caso muestra un clásico escenario de correspondencia entre una **sigla** (“IRAM”) y su **nombre institucional completo** (“INSTITUTO ARGENTINO DE NORMALIZACION Y CERTIFICACION”). El algoritmo **PrevLevenshtein** refleja esto correctamente con un valor de **100.00%**, reconociendo la equivalencia implícita entre el acrónimo y la frase expandida.
+
+Sin embargo, la versión moderna de **Levenshtein** cae abruptamente a **8.16%**, penalizando la diferencia de longitud y omitiendo la asociación semántica entre las siglas y sus términos desarrollados.
+
+Los algoritmos basados en fragmentación (**QGram**, **N-Gram**) también presentan valores muy bajos, ya que comparan secuencias de caracteres en bruto y no capturan el patrón acrónimo.
+
+**Cosine**, con un resultado algo mayor (**19.43%**), sugiere una ligera ventaja al considerar frecuencias de tokens, aunque sigue sin lograr representar adecuadamente la equivalencia conceptual.
+
+Este ejemplo evidencia las limitaciones de los enfoques puramente string-based frente a estructuras sigla–nombre, y la utilidad de versiones anteriores o adaptadas para estos contextos.
 
 ---
 
