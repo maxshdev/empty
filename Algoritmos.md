@@ -28,154 +28,268 @@ El sistema busca evaluar la similitud entre nombres de beneficiarios antes y des
 
 # 📊 Ejemplos prácticos de comparación de nombres de beneficiarios
 
-## 🏢 Ejemplo 1: Empresa con siglas vs nombre extendido (con siglas y razón social larga)
+## 🏢 Ejemplo: Empresa con siglas vs nombre extendido (con siglas y razón social larga)
 
-**Cadena A:**  
-F A I P FABRICA AMERICANA INDUSTRIALIZADORA DE PAPELES S A I Y C  
-**Cadena B:**  
-FAIP S.A.I.C
+### 🔤 Cadenas
 
-| Algoritmo         | Valor    |
-|-------------------|----------|
-| PrevLevenshtein   | 90.00%   |
-| Levenshtein       | 15.79%   |
-| Jaccard           | 9.09%    |
-| N-Gram            | 14.62%   |
-| QGram (2)         | 25.00%   |
-| QGram (3)         | 16.13%   |
-| Cosine            | 24.60%   |
+- **Cadena A (sin normalizar):**  
+  `F A I P FABRICA AMERICANA INDUSTRIALIZADORA DE PAPELES S A I Y C`
 
-### 🧠 Interpretación
+- **Cadena B (sin normalizar):**  
+  `FAIP S.A.I.C`
 
-El valor de **PrevLevenshtein** (90%) muestra una fuerte coincidencia basada en una versión anterior del algoritmo, probablemente más tolerante con substrings, siglas y orden flexible. En cambio, la versión moderna de **Levenshtein** reduce la similitud a **15.79%**, lo que evidencia que penaliza fuertemente las diferencias de longitud y los caracteres intermedios.
+- **Cadena A (normalizada):**  
+  `FAIP FABRICA AMERICANA INDUSTRIALIZADORA DE PAPELES SAIYC`
 
-Los métodos como **Jaccard**, **N-Gram** y **QGram (3)** ofrecen valores muy bajos, ya que dependen de coincidencias exactas de fragmentos contiguos, lo cual es poco efectivo en casos con siglas o abreviaciones.
-
-El resultado de **Cosine** y **QGram (2)** es moderado, mostrando que al considerar frecuencias y pares de caracteres se logra una aproximación más equilibrada, aunque todavía distante de la percepción humana de equivalencia.
-
-Este ejemplo destaca cómo distintas variantes del mismo algoritmo pueden producir resultados drásticamente diferentes, y cómo la elección de métrica puede impactar significativamente la detección de entidades similares en datos reales.
+- **Cadena B (normalizada):**  
+  `FAIP SAIC`
 
 ---
 
-## 👨‍⚖️ Ejemplo 2: Nombre de estudio jurídico con espacio omitido
+### 🔍 Comparación de algoritmos
 
-**Cadena A:**  
-ESTUDIO O FARRELL SOCIEDAD COLECTIVA  
-**Cadena B:**  
-ESTUDIO OFARRELL
-
-| Algoritmo         | Valor    |
-|-------------------|----------|
-| PrevLevenshtein   | 93.75%   |
-| Levenshtein       | 55.17%   |
-| Jaccard           | 41.38%   |
-| N-Gram            | 52.87%   |
-| QGram (2)         | 65.12%   |
-| QGram (3)         | 58.54%   |
-| Cosine            | 61.72%   |
-
-### 🧠 Interpretación
-
-El algoritmo **PrevLevenshtein** muestra un alto nivel de similitud (**93.75%**), capturando correctamente que la única diferencia significativa es el espacio omitido entre “O” y “FARRELL”, y una extensión común como “SOCIEDAD COLECTIVA” que no afecta la identidad principal.
-
-Los algoritmos basados en fragmentos como **QGram** y **Cosine** también manejan bien esta variación, con valores por encima del 60%, ya que toleran diferencias mínimas en espaciado o segmentación.
-
-**Levenshtein** moderno baja a **55.17%** por penalizar carácter a carácter, incluso por un solo espacio, mientras que **Jaccard** se ve más afectado al tratar los textos como conjuntos disjuntos de palabras, perdiendo fuerza ante la omisión de un token.
-
-Este caso evidencia cómo pequeños cambios en la segmentación (espacios, puntuación) pueden tener impacto desproporcionado en algunos algoritmos, mientras que otros mantienen una mejor robustez semántica.
+| Algoritmo       | Sin Normalizar | Normalizado |
+|-----------------|----------------|-------------|
+| PrevLevenshtein | 30.25%         | 90.00%      |
+| Levenshtein     | 14.06%         | 15.79%      |
+| Jaccard         | 0.00%          | 9.09%       |
+| N-Gram          | 10.42%         | 14.62%      |
+| QGram (2)       | 8.11%          | 25.00%      |
+| QGram (3)       | 0.00%          | 16.13%      |
+| Cosine          | 0.00%          | 24.60%      |
 
 ---
 
-## 🧍 Ejemplo 3: Nombre de persona mal tipeado
-
-**Cadena A:**  
-ERBRENEE  
-**Cadena B:**  
-ERB RENEE
-
-| Algoritmo         | Valor    |
-|-------------------|----------|
-| PrevLevenshtein   | 50.00%   |
-| Levenshtein       | 88.89%   |
-| Jaccard           | 44.44%   |
-| N-Gram            | 81.48%   |
-| QGram (2)         | 80.00%   |
-| QGram (3)         | 61.54%   |
-| Cosine            | 61.72%   |
-
 ### 🧠 Interpretación
 
-En este caso, la cadena presenta una omisión de espacio, típica de errores de tipeo entre nombres y apellidos. El algoritmo **Levenshtein** moderno logra un excelente desempeño (**88.89%**) al evaluar la transformación mínima entre ambas cadenas.
+En la versión **sin normalizar**, los algoritmos muestran **muy baja similitud**. Por ejemplo:
 
-Curiosamente, **PrevLevenshtein** da un valor bajo (**50.00%**), lo que sugiere que su versión antigua penaliza más la distancia por la concatenación sin espacio.
+- **Jaccard**, **QGram (3)** y **Cosine** arrojan un **0%**, reflejando una incapacidad de detectar equivalencias cuando las cadenas están compuestas por siglas separadas, puntuación y diferencias léxicas notables.
+- **PrevLevenshtein** ofrece un valor algo mayor (**30.25%**), indicando cierta sensibilidad al orden de aparición de fragmentos.
 
-**N-Gram** y **QGram (2)** también ofrecen valores altos (**81.48%** y **80.00%**, respectivamente), ya que permiten comparar secuencias con tolerancia a desplazamientos leves. Esto indica que trabajan bien en nombres cortos con errores menores.
+Una vez aplicada la **normalización** (eliminación de puntuación, unificación de siglas, homogenización de formato), el panorama cambia radicalmente:
 
-Por su parte, **Jaccard** sufre al tratar los tokens como conjuntos, y su resultado (**44.44%**) refleja la pérdida de correspondencia debido a la segmentación incorrecta.
+- **PrevLevenshtein** escala hasta un **90%**, señalando alta similitud semántica y estructural.
+- **Levenshtein** también mejora (aunque menos drásticamente).
+- Otras métricas como **QGram (2)**, **Cosine** y **N-Gram** presentan subidas notables, validando que los datos se vuelven más comparables al eliminar el "ruido".
 
-Este ejemplo muestra cómo algoritmos sensibles a la distancia de edición o fragmentos flexibles son más eficaces para capturar errores simples de tipeo en nombres personales.
+Este ejemplo evidencia la **importancia crítica del proceso de normalización** para aplicar algoritmos de comparación con efectividad en cadenas reales. Sin este paso, los resultados pueden ser **engañosamente bajos**, ocultando relaciones reales entre entidades.
+
 
 ---
 
-## 🏭 Ejemplo 4: Empresa con nombre abreviado
+## 🏢 Ejemplo: Empresa con nombre largo vs nombre abreviado (misma raíz comercial)
 
-**Cadena A:**  
-ADECO AGROPECUARIA SA  
-**Cadena B:**  
-ADECO ASA
+### 🔤 Cadenas
 
-| Algoritmo         | Valor    |
-|-------------------|----------|
-| PrevLevenshtein   | 83.33%   |
-| Levenshtein       | 90.00%   |
-| Jaccard           | 50.00%   |
-| N-Gram            | 83.33%   |
-| QGram (2)         | 82.35%   |
-| QGram (3)         | 66.67%   |
-| Cosine            | 66.82%   |
+- **Cadena A (sin normalizar):**  
+  `LOITEGUI SOCIEDAD ANONIMA CONTRUCTORA INMOBILIARIA AGROPECUARIA COMERCIAL IND Y FINANCIER`
 
-### 🧠 Interpretación
+- **Cadena B (sin normalizar):**  
+  `LOITEGUI S A`
 
-Este caso representa una abreviación común en razón social: “AGROPECUARIA SA” se reduce a “ASA”. El algoritmo **Levenshtein** moderno entrega un valor muy alto (**90.00%**), reconociendo la fuerte coincidencia entre “ADECO” y las partes claves del nombre.
+- **Cadena A (normalizada):**  
+  `LOITEGUI SA CONTRUCTORA IAC IND Y FINANCIER`
 
-**PrevLevenshtein** también obtiene un resultado sólido (**83.33%**), aunque algo menor, posiblemente por una menor tolerancia a abreviaciones que condensan múltiples palabras.
-
-Tanto **N-Gram** como **QGram (2)** muestran buenos resultados (ambos por encima del 80%), lo que indica su capacidad para comparar secuencias parcialmente alineadas, especialmente cuando la abreviación mantiene parte de la raíz léxica.
-
-**Jaccard**, aunque mejora en relación a otros ejemplos, sigue penalizando la falta de tokens completos coincidentes, reflejando un enfoque más literal que semántico.
-
-Este ejemplo destaca cómo los algoritmos que permiten flexibilidad en secuencia o edición son útiles para detectar correspondencias en denominaciones comerciales abreviadas.
+- **Cadena B (normalizada):**  
+  `LOITEGUI SA`
 
 ---
 
-## 🧪 Ejemplo 5: Sigla frente a nombre completo institucional
+### 🔍 Comparación de algoritmos
 
-**Cadena A:**  
-IRAM INSTITUTO ARGENTINO DE NORMALIZACION Y CERTIFICACION  
-**Cadena B:**  
-IRAM
+| Algoritmo       | Sin Normalizar | Normalizado |
+|-----------------|----------------|-------------|
+| PrevLevenshtein | 42.26%         | 100.00%     |
+| Levenshtein     | 13.48%         | 25.58%      |
+| Jaccard         | 9.76%          | 21.95%      |
+| N-Gram          | 12.73%         | 25.58%      |
+| QGram (2)       | 20.20%         | 38.46%      |
+| QGram (3)       | 16.49%         | 36.00%      |
+| Cosine          | 25.17%         | 46.85%      |
 
-| Algoritmo         | Valor    |
-|-------------------|----------|
-| PrevLevenshtein   | 100.00%  |
-| Levenshtein       | 8.16%    |
-| Jaccard           | 4.55%    |
-| N-Gram            | 8.16%    |
-| QGram (2)         | 11.76%   |
-| QGram (3)         | 8.16%    |
-| Cosine            | 19.43%   |
+---
 
 ### 🧠 Interpretación
 
-Este caso muestra un clásico escenario de correspondencia entre una **sigla** (“IRAM”) y su **nombre institucional completo** (“INSTITUTO ARGENTINO DE NORMALIZACION Y CERTIFICACION”). El algoritmo **PrevLevenshtein** refleja esto correctamente con un valor de **100.00%**, reconociendo la equivalencia implícita entre el acrónimo y la frase expandida.
+En este caso, la **Cadena A sin normalizar** contiene un nombre de empresa extremadamente largo con múltiples adjetivos legales y descriptivos (como “Sociedad Anónima”, “Comercial”, “Inmobiliaria”, etc.), mientras que la **Cadena B** es simplemente una **versión abreviada**: `LOITEGUI S A`.
 
-Sin embargo, la versión moderna de **Levenshtein** cae abruptamente a **8.16%**, penalizando la diferencia de longitud y omitiendo la asociación semántica entre las siglas y sus términos desarrollados.
+- Los resultados **sin normalizar** reflejan esto: la mayoría de los algoritmos dan entre **10% y 25%**, indicando una baja coincidencia aparente debido a la diferencia de longitud y vocabulario.
+- El **PrevLevenshtein**, más tolerante con substrings y omisiones, da un valor más alto (**42.26%**), aunque aún lejos de sugerir equivalencia total.
 
-Los algoritmos basados en fragmentación (**QGram**, **N-Gram**) también presentan valores muy bajos, ya que comparan secuencias de caracteres en bruto y no capturan el patrón acrónimo.
+Una vez que se aplica la **normalización** (eliminando palabras genéricas y unificando siglas):
 
-**Cosine**, con un resultado algo mayor (**19.43%**), sugiere una ligera ventaja al considerar frecuencias de tokens, aunque sigue sin lograr representar adecuadamente la equivalencia conceptual.
+- **PrevLevenshtein** alcanza el **100%**, indicando una coincidencia total entre las formas raíz más significativas de ambas cadenas.
+- Las demás métricas también muestran una mejora importante, especialmente:
+  - **Cosine**: 46.85%
+  - **QGram (3)**: 36.00%
+  - **Levenshtein**: 25.58%
 
-Este ejemplo evidencia las limitaciones de los enfoques puramente string-based frente a estructuras sigla–nombre, y la utilidad de versiones anteriores o adaptadas para estos contextos.
+👉 Este ejemplo demuestra que las diferencias en **longitud y detalle** entre la razón social completa y una versión abreviada pueden ocultar similitudes reales, y que la **normalización es clave para desenmascararlas**.  
+La métrica **PrevLevenshtein** se muestra especialmente efectiva en estos escenarios.
+
+---
+
+## 🏢 Ejemplo: Empresa con diferencias mínimas en puntuación (alta similitud)
+
+### 🔤 Cadenas
+
+- **Cadena A (sin normalizar):**  
+  `HOSTERIA PATAGONICA CALAFATE SA3`
+
+- **Cadena B (sin normalizar):**  
+  `HOSTERIA PATAGONICA CALAFATE S.A.,3`
+
+- **Cadena A (normalizada):**  
+  `HOSTERIA PATAGONICA CALAFATE SA3`
+
+- **Cadena B (normalizada):**  
+  `HOSTERIA PATAGONICA CALAFATE SA 3`
+
+---
+
+### 🔍 Comparación de algoritmos
+
+| Algoritmo       | Sin Normalizar | Normalizado |
+|-----------------|----------------|-------------|
+| PrevLevenshtein | 76.67%         | 80.00%      |
+| Levenshtein     | 91.43%         | 96.97%      |
+| Jaccard         | 80.00%         | 90.62%      |
+| N-Gram          | 88.57%         | 95.96%      |
+| QGram (2)       | 89.23%         | 95.24%      |
+| QGram (3)       | 88.89%         | 95.08%      |
+| Cosine          | 88.99%         | 95.09%      |
+
+---
+
+### 🧠 Interpretación
+
+Este caso representa una situación muy común en bases de datos reales: **mismas entidades jurídicas con ligeras variaciones en puntuación**, uso de comas y espacios.
+
+- Incluso **sin aplicar normalización**, los algoritmos ya reflejan una **coincidencia muy alta**:
+  - **Levenshtein** (91.43%), **QGram (2 y 3)** y **Cosine** superan el **88%**, lo que evidencia que las diferencias sintácticas **no afectan gravemente la percepción algorítmica de similitud**.
+
+- Al aplicar la **normalización**, estas pequeñas inconsistencias (como el punto en "S.A." o la coma antes del número) son eliminadas, y los resultados alcanzan niveles casi perfectos:
+  - **Levenshtein** salta a **96.97%**, y todos los métodos basados en **n-gramas** y **cosine** superan el **95%**.
+
+👉 Este ejemplo muestra que para casos **altamente similares**, la **normalización no solo refuerza la precisión**, sino que también puede ser el **factor decisivo** para establecer la equivalencia total.  
+Esto es especialmente importante en entornos sensibles como:
+- Cumplimiento normativo
+- Prevención de lavado de dinero
+- Identificación de partes en transacciones financieras
+
+---
+
+## 👤 Ejemplo: Persona física con y sin puntuación (apellido-nombre)
+
+### 🔤 Cadenas
+
+- **Cadena A (sin normalizar):**  
+  `TISCHHAUSERMARTA ELENA`
+
+- **Cadena B (sin normalizar):**  
+  `TISCHHAUSER,MARTA ELENA`
+
+- **Cadena A (normalizada):**  
+  `TISCHHAUSERMARTA ELENA`
+
+- **Cadena B (normalizada):**  
+  `TISCHHAUSER MARTA ELENA`
+
+---
+
+### 🔍 Comparación de algoritmos
+
+| Algoritmo       | Sin Normalizar | Normalizado |
+|-----------------|----------------|-------------|
+| PrevLevenshtein | 66.67%         | 66.67%      |
+| Levenshtein     | 95.65%         | 95.65%      |
+| Jaccard         | 78.26%         | 78.26%      |
+| N-Gram          | 92.75%         | 92.75%      |
+| QGram (2)       | 93.02%         | 93.02%      |
+| QGram (3)       | 87.80%         | 87.80%      |
+| Cosine          | 87.83%         | 87.83%      |
+
+---
+
+### 🧠 Interpretación
+
+Este caso ilustra cómo la diferencia mínima en puntuación (**coma tras el apellido**) y la **inclusión o no de espacios** pueden influir en la percepción algorítmica.
+
+A pesar de que las cadenas no son exactamente iguales, las métricas como:
+
+- **Levenshtein (95.65%)**
+- **QGram (2 y 3)**
+- **N-Gram (92.75%)**
+
+indican que los elementos clave de la identidad están **totalmente presentes y correctamente ordenados**, lo que produce valores de similitud muy altos, incluso sin necesidad de normalización.
+
+👉 Curiosamente, el valor de **PrevLevenshtein (66.67%)** se mantiene bajo tanto en crudo como normalizado. Esto puede deberse a su **sensibilidad a substrings contiguos** o a su forma de tratar cadenas concatenadas sin separadores (como `"TISCHHAUSERMARTA"`).
+
+En cambio, **Levenshtein clásico** y **Cosine** son mucho más robustos para estos escenarios, donde hay **cambios menores en la segmentación pero no en el contenido textual**.
+
+---
+
+Este tipo de caso es clave para validar que los **algoritmos seleccionados sean capaces de detectar similitudes entre formas naturales y alternativas de escritura de nombres de personas físicas**.  
+Es especialmente importante en:
+
+- Bases de datos bancarias  
+- Registros públicos  
+- Screening de listas (listas restrictivas, sanciones, etc.)
+
+---
+
+## 👤 Ejemplo: Persona física con nombre completo separado vs concatenado
+
+### 🔤 Cadenas
+
+- **Cadena A (sin normalizar):**  
+  `MARIA DE LOS ANGELES YUGDAR`
+
+- **Cadena B (sin normalizar):**  
+  `MARIADELOSANGELES YUGDAR`
+
+- **Cadena A (normalizada):**  
+  `MARIA DE LOS ANGELES YUGDAR`
+
+- **Cadena B (normalizada):**  
+  `MARIADELOSANGELES YUGDAR`
+
+---
+
+### 🔍 Comparación de algoritmos
+
+| Algoritmo       | Sin Normalizar | Normalizado |
+|-----------------|----------------|-------------|
+| PrevLevenshtein | 70.59%         | 70.59%      |
+| Levenshtein     | 88.89%         | 88.89%      |
+| Jaccard         | 51.61%         | 51.61%      |
+| N-Gram          | 81.48%         | 81.48%      |
+| QGram (2)       | 81.63%         | 81.63%      |
+| QGram (3)       | 68.09%         | 68.09%      |
+| Cosine          | 68.22%         | 68.22%      |
+
+---
+
+### 🧠 Interpretación
+
+Este ejemplo destaca una diferencia **puramente sintáctica**: la **Cadena B** no tiene espacios en el nombre compuesto (`"MARIADELOSANGELES"`), mientras que la **Cadena A** sí los incluye.  
+Esta variación es **muy frecuente** en sistemas que procesan nombres largos o compuestos, donde el tokenizador puede fallar o el usuario omite espacios.
+
+Aun así:
+
+- **Levenshtein** alcanza un **88.89%**, mostrando gran tolerancia a **espacios insertados o eliminados**.
+- **QGram (2)** y **N-Gram** también se comportan bien, por su capacidad de **capturar secuencias de caracteres** aunque estén desalineadas.
+- En cambio, **Jaccard (51.61%)**, **Cosine (68.22%)** y **QGram (3)** sufren un poco más, ya que la concatenación rompe algunos patrones esperados de similitud.
+
+👉 **PrevLevenshtein** da un valor **moderado (70.59%)**, lo cual está en línea con lo que se espera para casos con diferencias de segmentación pero sin errores ortográficos ni de orden.
+
+---
+
+### ✅ Conclusiones
+
+- Algoritmos como **Levenshtein** o **QGram** pueden **identificar correctamente equivalencias** incluso si el formato visual (con o sin espacios) difiere.
+- La **presencia o ausencia de espacios** debe ser **tratada explícitamente durante la normalización**, ya que puede ser determinante en el resultado final de los algoritmos.
 
 ---
 
